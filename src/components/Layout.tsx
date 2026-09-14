@@ -20,7 +20,7 @@ export function Layout() {
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 bg-ink text-white flex flex-col shrink-0">
-        <div className="px-5 py-6 font-display text-lg tracking-[.2em] border-b border-white/10">
+        <div className="px-5 py-6 font-display text-base tracking-[.08em] border-b border-white/10 whitespace-nowrap overflow-hidden text-ellipsis">
           D1<span className="text-red">·</span>LANDANDHOUSE
         </div>
         <nav className="flex-1 py-4">
