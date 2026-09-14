@@ -3,6 +3,7 @@ import { useAuth } from '@/lib/auth';
 
 const NAV = [
   { to: '/', label: 'แดชบอร์ด', end: true },
+  { to: '/pages/home', label: 'หน้าเว็บ' },
   { to: '/properties', label: 'ทรัพย์' },
   { to: '/projects', label: 'โครงการ' },
   { to: '/leads', label: 'ลีด' },
