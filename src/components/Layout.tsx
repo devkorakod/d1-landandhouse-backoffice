@@ -19,8 +19,8 @@ export function Layout() {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="w-60 bg-ink text-white flex flex-col shrink-0">
+    <div className="h-screen flex overflow-hidden">
+      <aside className="w-60 bg-ink text-white flex flex-col shrink-0 h-full overflow-y-auto">
         <div className="px-5 py-6 font-display text-base tracking-[.08em] border-b border-white/10 whitespace-nowrap overflow-hidden text-ellipsis">
           D1<span className="text-red">·</span>LANDANDHOUSE
         </div>
@@ -50,7 +50,7 @@ export function Layout() {
           <button onClick={logout} className="text-red-bright hover:underline">ออกจากระบบ</button>
         </div>
       </aside>
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 p-8 overflow-y-auto">
         <Outlet />
       </main>
     </div>

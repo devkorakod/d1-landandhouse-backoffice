@@ -13,6 +13,7 @@ export function SettingsPage() {
   if (!settings) return <p className="text-muted">กำลังโหลด...</p>;
 
   const cc = settings.contactChannels ?? {};
+  const nf = settings.notifications ?? { enabled: true, telegramEnabled: true, emailEnabled: false, notifyEmail: '' };
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -21,7 +22,7 @@ export function SettingsPage() {
     try {
       await apiFetch('/admin/settings', {
         method: 'PATCH',
-        body: JSON.stringify({ siteName: settings.siteName, contactChannels: cc }),
+        body: JSON.stringify({ siteName: settings.siteName, contactChannels: cc, notifications: nf }),
       });
       setSaved(true);
     } catch (err) {
@@ -31,6 +32,12 @@ export function SettingsPage() {
 
   const setCc = (patch: Record<string, string>) =>
     setSettings((s: any) => ({ ...s, contactChannels: { ...s.contactChannels, ...patch } }));
+
+  const setNf = (patch: Record<string, unknown>) =>
+    setSettings((s: any) => ({
+      ...s,
+      notifications: { enabled: true, telegramEnabled: true, emailEnabled: false, notifyEmail: '', ...s.notifications, ...patch },
+    }));
 
   const readOnly = user?.role !== 'owner';
 
@@ -52,12 +59,43 @@ export function SettingsPage() {
         <Field label="LINE URL">
           <input disabled={readOnly} value={cc.lineUrl ?? ''} onChange={(e) => setCc({ lineUrl: e.target.value })} className="input" />
         </Field>
-        <Field label="อีเมลรับลีด">
+        <Field label="อีเมลติดต่อ (แสดงบนเว็บสาธารณะ)">
           <input disabled={readOnly} value={cc.email ?? ''} onChange={(e) => setCc({ email: e.target.value })} className="input" />
         </Field>
         <Field label="เวลาทำการ">
           <input disabled={readOnly} value={cc.officeHours ?? ''} onChange={(e) => setCc({ officeHours: e.target.value })} className="input" />
         </Field>
+
+        <div className="pt-4 mt-2 border-t border-black/10">
+          <h2 className="text-sm font-semibold mb-1">การแจ้งเตือนลีดใหม่</h2>
+          <p className="text-muted text-xs mb-3">ตั้งค่าภายใน ไม่แสดงบนเว็บสาธารณะ</p>
+
+          <label className="flex items-center gap-2 text-sm mb-3">
+            <input type="checkbox" disabled={readOnly} checked={!!nf.enabled}
+                   onChange={(e) => setNf({ enabled: e.target.checked })} />
+            เปิดใช้งานการแจ้งเตือน
+          </label>
+
+          <div className={`space-y-3 pl-1 ${nf.enabled ? '' : 'opacity-50 pointer-events-none'}`}>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" disabled={readOnly} checked={!!nf.telegramEnabled}
+                     onChange={(e) => setNf({ telegramEnabled: e.target.checked })} />
+              แจ้งผ่าน Telegram
+            </label>
+
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" disabled={readOnly} checked={!!nf.emailEnabled}
+                     onChange={(e) => setNf({ emailEnabled: e.target.checked })} />
+              แจ้งผ่านอีเมล
+            </label>
+
+            <Field label="อีเมลที่จะรับการแจ้งเตือน">
+              <input disabled={readOnly || !nf.emailEnabled} type="email" placeholder="sales@d1landandhouse.co.th"
+                     value={nf.notifyEmail ?? ''} onChange={(e) => setNf({ notifyEmail: e.target.value })} className="input" />
+            </Field>
+          </div>
+        </div>
+
         {error && <p className="text-red text-sm">{error}</p>}
         {saved && <p className="text-green-700 text-sm">บันทึกแล้ว</p>}
         {!readOnly && (
