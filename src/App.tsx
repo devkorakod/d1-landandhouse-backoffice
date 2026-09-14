@@ -9,6 +9,7 @@ import { ProjectFormPage } from '@/pages/ProjectForm';
 import { LeadsPage } from '@/pages/Leads';
 import { PromotionsPage } from '@/pages/Promotions';
 import { PromotionFormPage } from '@/pages/PromotionForm';
+import { MediaLibraryPage } from '@/pages/MediaLibrary';
 import { SettingsPage } from '@/pages/Settings';
 import { UsersPage } from '@/pages/Users';
 
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/leads" element={<LeadsPage />} />
         <Route path="/promotions" element={<PromotionsPage />} />
         <Route path="/promotions/:id" element={<PromotionFormPage />} />
+        <Route path="/media" element={<MediaLibraryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/users" element={<UsersPage />} />
       </Route>

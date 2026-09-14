@@ -7,6 +7,7 @@ const NAV = [
   { to: '/projects', label: 'โครงการ' },
   { to: '/leads', label: 'ลีด' },
   { to: '/promotions', label: 'โปรโมชั่น' },
+  { to: '/media', label: 'คลังสื่อ' },
   { to: '/settings', label: 'ตั้งค่า' },
 ];
 
