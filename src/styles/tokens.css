@@ -1,0 +1,32 @@
+/* ═══ Design Tokens — Luxury (ดำ / แดง / ขาว) ═══ */
+:root {
+  --color-ink:         #0B0B0C;
+  --color-ink-soft:    #16171A;
+  --color-red:         #B3241E;
+  --color-red-bright:  #E5453A;
+  --color-white:       #FFFFFF;
+  --color-white-deep:  #F2F2F2;
+  --color-text-dark:   #1A1A1C;
+  --color-text-light:  #F3F0EA;
+  --color-muted:       #8A8577;
+  --color-line:        rgba(179, 36, 30, .28);
+
+  --font-display: 'Cormorant Garamond', 'Noto Serif Thai', Georgia, serif;
+  --font-body:    'Inter', 'IBM Plex Sans Thai', -apple-system, sans-serif;
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --space-9: 96px; --space-10: 128px;
+
+  --radius: 2px;
+  --container: 1440px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  --duration: 480ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
