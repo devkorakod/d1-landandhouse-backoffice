@@ -5,8 +5,10 @@ import { DashboardPage } from '@/pages/Dashboard';
 import { PropertiesListPage } from '@/pages/PropertiesList';
 import { PropertyFormPage } from '@/pages/PropertyForm';
 import { ProjectsListPage } from '@/pages/ProjectsList';
+import { ProjectFormPage } from '@/pages/ProjectForm';
 import { LeadsPage } from '@/pages/Leads';
 import { PromotionsPage } from '@/pages/Promotions';
+import { PromotionFormPage } from '@/pages/PromotionForm';
 import { SettingsPage } from '@/pages/Settings';
 import { UsersPage } from '@/pages/Users';
 
@@ -19,8 +21,10 @@ export default function App() {
         <Route path="/properties" element={<PropertiesListPage />} />
         <Route path="/properties/:id" element={<PropertyFormPage />} />
         <Route path="/projects" element={<ProjectsListPage />} />
+        <Route path="/projects/:id" element={<ProjectFormPage />} />
         <Route path="/leads" element={<LeadsPage />} />
         <Route path="/promotions" element={<PromotionsPage />} />
+        <Route path="/promotions/:id" element={<PromotionFormPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/users" element={<UsersPage />} />
       </Route>
