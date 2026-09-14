@@ -4,7 +4,6 @@ import { apiFetch } from '@/lib/api';
 interface MediaResult { id?: string; _id?: string; url: string }
 
 export function MediaUploader({ value, onChange }: { value?: string; onChange: (mediaId: string, url: string) => void }) {
-  const [preview, setPreview] = useState(value);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,7 +16,6 @@ export function MediaUploader({ value, onChange }: { value?: string; onChange: (
       const form = new FormData();
       form.append('file', file);
       const media = await apiFetch<MediaResult>('/admin/media', { method: 'POST', body: form });
-      setPreview(media.url);
       onChange((media as any)._id ?? (media as any).id, media.url);
     } catch {
       setError('อัปโหลดไม่สำเร็จ');
@@ -28,8 +26,8 @@ export function MediaUploader({ value, onChange }: { value?: string; onChange: (
 
   return (
     <div>
-      {preview && (
-        <img src={preview} alt="" className="w-40 h-28 object-cover border border-black/10 mb-2" />
+      {value && (
+        <img src={value} alt="" className="w-40 h-28 object-cover border border-black/10 mb-2" />
       )}
       <input type="file" accept="image/*" onChange={onFile} disabled={busy} className="text-sm" />
       {busy && <p className="text-xs text-muted mt-1">กำลังอัปโหลด...</p>}

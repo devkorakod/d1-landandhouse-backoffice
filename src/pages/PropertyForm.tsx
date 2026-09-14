@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch, ApiClientError } from '@/lib/api';
 import { MediaUploader } from '@/components/MediaUploader';
+import { MediaGalleryUploader, type GalleryItem } from '@/components/MediaGalleryUploader';
 
 const PROPERTY_TYPES = ['house', 'condo', 'land', 'townhouse', 'commercial', 'apartment', 'villa', 'office', 'warehouse', 'hotel'];
 const LISTING_TYPES = ['sale', 'rent', 'sale_rent'];
@@ -27,6 +28,7 @@ export function PropertyFormPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(empty);
   const [coverUrl, setCoverUrl] = useState<string | undefined>();
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -45,6 +47,7 @@ export function PropertyFormPage() {
         isFeatured: !!p.isFeatured,
       });
       setCoverUrl(p.coverImage?.url);
+      setGallery((p.gallery ?? []).map((g: any) => ({ mediaId: g.mediaId, url: g.url })));
     });
   }, [id, isNew]);
 
@@ -59,6 +62,7 @@ export function PropertyFormPage() {
         ...location,
         ...(location.address.th.trim() ? {} : { address: undefined }),
       },
+      galleryIds: gallery.map((g) => g.mediaId),
     };
   }
 
@@ -172,6 +176,10 @@ export function PropertyFormPage() {
 
         <Field label="ภาพหน้าปก">
           <MediaUploader value={coverUrl} onChange={(mediaId, url) => { set({ coverImageId: mediaId }); setCoverUrl(url); }} />
+        </Field>
+
+        <Field label="แกลเลอรีภาพ (เลือกได้หลายรูปพร้อมกัน)">
+          <MediaGalleryUploader value={gallery} onChange={setGallery} />
         </Field>
 
         <label className="flex items-center gap-2 text-sm">
