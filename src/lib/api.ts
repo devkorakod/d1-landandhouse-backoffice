@@ -12,7 +12,12 @@ export class ApiClientError extends Error {
 
 let refreshing: Promise<boolean> | null = null;
 
-async function tryRefresh(): Promise<boolean> {
+/**
+ * Single-flight refresh — สำคัญมากตอน bootstrap: React StrictMode (dev only) mount
+ * effect ซ้ำสองรอบ ถ้าไม่ dedupe ตรงนี้จะยิง /admin/auth/refresh พร้อมกัน 2 ครั้ง
+ * ครั้งที่แพ้จะได้ 401 (refresh token หมุนไปแล้ว) แล้วเผลอ setUser(null) ทับของจริง
+ */
+export async function tryRefresh(): Promise<boolean> {
   if (!refreshing) {
     refreshing = fetch(`${BASE}/admin/auth/refresh`, { method: 'POST', credentials: 'include' })
       .then(async (res) => {

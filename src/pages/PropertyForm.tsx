@@ -48,15 +48,30 @@ export function PropertyFormPage() {
     });
   }, [id, isNew]);
 
+  function buildPayload() {
+    // description/location.address เป็น optional ฝั่ง backend แต่ถ้าส่ง th เป็นค่าว่าง
+    // จะโดน validate ตก (LocalizedString ต้องมี th ไม่ว่างถ้ามี field นั้นมาด้วย) — เลยตัดทิ้งถ้ายังไม่กรอก
+    const { description, location, ...rest } = form;
+    return {
+      ...rest,
+      ...(description.th.trim() ? { description } : {}),
+      location: {
+        ...location,
+        ...(location.address.th.trim() ? {} : { address: undefined }),
+      },
+    };
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError('');
     try {
+      const payload = buildPayload();
       if (isNew) {
-        await apiFetch('/admin/properties', { method: 'POST', body: JSON.stringify(form) });
+        await apiFetch('/admin/properties', { method: 'POST', body: JSON.stringify(payload) });
       } else {
-        await apiFetch(`/admin/properties/${id}`, { method: 'PATCH', body: JSON.stringify(form) });
+        await apiFetch(`/admin/properties/${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
       }
       navigate('/properties');
     } catch (err) {

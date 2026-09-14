@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { apiFetch, setAccessToken } from './api';
+import { apiFetch, setAccessToken, tryRefresh } from './api';
 
 export interface AdminUser { id: string; email: string; name: string; role: 'owner' | 'admin'; isAgent?: boolean }
 
@@ -17,19 +17,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     (async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1'}/admin/auth/refresh`,
-          { method: 'POST', credentials: 'include' });
-        const json = await res.json().catch(() => null);
-        if (res.ok && json?.success) {
-          setAccessToken(json.data.accessToken);
+      const ok = await tryRefresh().catch(() => false);
+      if (!active) return; // StrictMode dev double-mount — ค่าจาก invocation เก่าไม่ต้องใช้
+      if (ok) {
+        try {
           const me = await apiFetch<AdminUser>('/admin/auth/me');
-          setUser(me);
-        }
-      } catch { /* ยังไม่ได้ล็อกอิน */ }
-      setLoading(false);
+          if (active) setUser(me);
+        } catch { /* token ใช้ไม่ได้แล้วระหว่างนี้ — ปล่อยเป็น null ตามปกติ */ }
+      }
+      if (active) setLoading(false);
     })();
+    return () => { active = false; };
   }, []);
 
   async function login(email: string, password: string) {
