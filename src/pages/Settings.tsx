@@ -104,7 +104,67 @@ export function SettingsPage() {
           </button>
         )}
       </form>
+
+      <ChangePasswordCard />
     </div>
+  );
+}
+
+function ChangePasswordCard() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSaved(false);
+    if (newPassword !== confirmPassword) {
+      setError('ยืนยันรหัสผ่านใหม่ไม่ตรงกัน');
+      return;
+    }
+    setBusy(true);
+    try {
+      await apiFetch('/admin/users/me/password', {
+        method: 'PATCH',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      setSaved(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'เปลี่ยนรหัสผ่านไม่สำเร็จ');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="bg-white p-6 border border-black/10 space-y-4 mt-6">
+      <h2 className="text-sm font-semibold">เปลี่ยนรหัสผ่านของฉัน</h2>
+      <Field label="รหัสผ่านปัจจุบัน">
+        <input type="password" required autoComplete="current-password" className="input"
+               value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+      </Field>
+      <Field label="รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)">
+        <input type="password" required minLength={8} autoComplete="new-password" className="input"
+               value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+      </Field>
+      <Field label="ยืนยันรหัสผ่านใหม่">
+        <input type="password" required minLength={8} autoComplete="new-password" className="input"
+               value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+      </Field>
+      {error && <p className="text-red text-sm">{error}</p>}
+      {saved && <p className="text-green-700 text-sm">เปลี่ยนรหัสผ่านแล้ว</p>}
+      <button type="submit" disabled={busy}
+              className="bg-red hover:bg-red-bright text-white px-6 py-2.5 text-xs uppercase tracking-[.14em] disabled:opacity-60">
+        {busy ? 'กำลังบันทึก...' : 'เปลี่ยนรหัสผ่าน'}
+      </button>
+    </form>
   );
 }
 
