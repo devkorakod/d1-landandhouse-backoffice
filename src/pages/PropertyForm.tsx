@@ -17,7 +17,7 @@ const empty = {
   price: { sale: undefined as number | undefined, rentMonthly: undefined as number | undefined, hidePrice: false },
   area: { usableSqm: undefined as number | undefined, landRai: 0, landNgan: 0, landWah: 0 },
   spec: { bedrooms: undefined as number | undefined, bathrooms: undefined as number | undefined, parking: undefined as number | undefined },
-  location: { zone: '', address: { th: '' } },
+  location: { zone: '', address: { th: '' }, lat: undefined as number | undefined, lng: undefined as number | undefined },
   coverImageId: undefined as string | undefined,
   isFeatured: false,
 };
@@ -42,7 +42,10 @@ export function PropertyFormPage() {
         price: { sale: p.price?.sale, rentMonthly: p.price?.rentMonthly, hidePrice: !!p.price?.hidePrice },
         area: { usableSqm: p.area?.usableSqm, landRai: p.area?.landRai ?? 0, landNgan: p.area?.landNgan ?? 0, landWah: p.area?.landWah ?? 0 },
         spec: { bedrooms: p.spec?.bedrooms, bathrooms: p.spec?.bathrooms, parking: p.spec?.parking },
-        location: { zone: p.location?.zone ?? '', address: { th: p.location?.address?.th ?? '' } },
+        location: {
+          zone: p.location?.zone ?? '', address: { th: p.location?.address?.th ?? '' },
+          lng: p.location?.geo?.coordinates?.[0], lat: p.location?.geo?.coordinates?.[1],
+        },
         coverImageId: p.coverImage?.mediaId,
         isFeatured: !!p.isFeatured,
       });
@@ -55,12 +58,14 @@ export function PropertyFormPage() {
     // description/location.address เป็น optional ฝั่ง backend แต่ถ้าส่ง th เป็นค่าว่าง
     // จะโดน validate ตก (LocalizedString ต้องมี th ไม่ว่างถ้ามี field นั้นมาด้วย) — เลยตัดทิ้งถ้ายังไม่กรอก
     const { description, location, ...rest } = form;
+    const { lat, lng, ...locationRest } = location;
     return {
       ...rest,
       ...(description.th.trim() ? { description } : {}),
       location: {
-        ...location,
+        ...locationRest,
         ...(location.address.th.trim() ? {} : { address: undefined }),
+        ...(lat != null && lng != null ? { geo: { type: 'Point', coordinates: [lng, lat] } } : {}),
       },
       galleryIds: gallery.map((g) => g.mediaId),
     };
@@ -172,6 +177,30 @@ export function PropertyFormPage() {
             <input value={form.location.address.th}
                    onChange={(e) => set({ location: { ...form.location, address: { th: e.target.value } } })} className="input" />
           </Field>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm text-muted">พิกัดแผนที่ (ไม่กรอกก็ได้ — ถ้าไม่กรอกจะไม่มีแผนที่แสดงในหน้าทรัพย์)</span>
+            <a href="https://www.google.com/maps" target="_blank" rel="noreferrer" className="text-xs text-red hover:underline shrink-0 ml-3">
+              เปิด Google Maps เพื่อหาพิกัด
+            </a>
+          </div>
+          <p className="text-xs text-muted mb-2">
+            วิธีหาพิกัด: ค้นหาตำแหน่งใน Google Maps → คลิกขวาที่หมุด → คัดลอกตัวเลขที่ขึ้นมา (แถวแรกคือละติจูด แถวสองคือลองจิจูด) มาใส่ด้านล่าง
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="ละติจูด (Lat)">
+              <input type="number" step="any" placeholder="เช่น 13.7307" value={form.location.lat ?? ''}
+                     onChange={(e) => set({ location: { ...form.location, lat: e.target.value ? Number(e.target.value) : undefined } })}
+                     className="input" />
+            </Field>
+            <Field label="ลองจิจูด (Lng)">
+              <input type="number" step="any" placeholder="เช่น 100.5799" value={form.location.lng ?? ''}
+                     onChange={(e) => set({ location: { ...form.location, lng: e.target.value ? Number(e.target.value) : undefined } })}
+                     className="input" />
+            </Field>
+          </div>
         </div>
 
         <Field label="ภาพหน้าปก">
