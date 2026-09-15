@@ -10,14 +10,14 @@ const STATUSES = ['draft', 'published', 'reserved', 'sold', 'rented', 'hidden'];
 
 const empty = {
   title: { th: '', en: '' },
-  description: { th: '' },
+  description: { th: '', en: '' },
   propertyType: 'house',
   listingType: 'sale',
   status: 'draft',
   price: { sale: undefined as number | undefined, rentMonthly: undefined as number | undefined, hidePrice: false },
   area: { usableSqm: undefined as number | undefined, landRai: 0, landNgan: 0, landWah: 0 },
   spec: { bedrooms: undefined as number | undefined, bathrooms: undefined as number | undefined, parking: undefined as number | undefined },
-  location: { zone: '', address: { th: '' }, lat: undefined as number | undefined, lng: undefined as number | undefined },
+  location: { zone: '', zoneEn: '', address: { th: '', en: '' }, lat: undefined as number | undefined, lng: undefined as number | undefined },
   coverImageId: undefined as string | undefined,
   isFeatured: false,
 };
@@ -37,13 +37,14 @@ export function PropertyFormPage() {
     apiFetch<any>(`/admin/properties/${id}`).then((p) => {
       setForm({
         title: { th: p.title?.th ?? '', en: p.title?.en ?? '' },
-        description: { th: p.description?.th ?? '' },
+        description: { th: p.description?.th ?? '', en: p.description?.en ?? '' },
         propertyType: p.propertyType, listingType: p.listingType, status: p.status,
         price: { sale: p.price?.sale, rentMonthly: p.price?.rentMonthly, hidePrice: !!p.price?.hidePrice },
         area: { usableSqm: p.area?.usableSqm, landRai: p.area?.landRai ?? 0, landNgan: p.area?.landNgan ?? 0, landWah: p.area?.landWah ?? 0 },
         spec: { bedrooms: p.spec?.bedrooms, bathrooms: p.spec?.bathrooms, parking: p.spec?.parking },
         location: {
-          zone: p.location?.zone ?? '', address: { th: p.location?.address?.th ?? '' },
+          zone: p.location?.zone ?? '', zoneEn: p.location?.zoneEn ?? '',
+          address: { th: p.location?.address?.th ?? '', en: p.location?.address?.en ?? '' },
           lng: p.location?.geo?.coordinates?.[0], lat: p.location?.geo?.coordinates?.[1],
         },
         coverImageId: p.coverImage?.mediaId,
@@ -109,10 +110,16 @@ export function PropertyFormPage() {
           </Field>
         </div>
 
-        <Field label="รายละเอียด">
-          <textarea rows={3} value={form.description.th}
-                    onChange={(e) => set({ description: { th: e.target.value } })} className="input" />
-        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="รายละเอียด (ไทย)">
+            <textarea rows={3} value={form.description.th}
+                      onChange={(e) => set({ description: { ...form.description, th: e.target.value } })} className="input" />
+          </Field>
+          <Field label="รายละเอียด (English)">
+            <textarea rows={3} value={form.description.en}
+                      onChange={(e) => set({ description: { ...form.description, en: e.target.value } })} className="input" />
+          </Field>
+        </div>
 
         <div className="grid grid-cols-3 gap-4">
           <Field label="ประเภททรัพย์">
@@ -169,13 +176,24 @@ export function PropertyFormPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="ย่าน/ทำเล">
+          <Field label="ย่าน/ทำเล (ไทย)">
             <input value={form.location.zone}
                    onChange={(e) => set({ location: { ...form.location, zone: e.target.value } })} className="input" />
           </Field>
-          <Field label="ที่อยู่แสดงผล">
+          <Field label="ย่าน/ทำเล (English)">
+            <input value={form.location.zoneEn}
+                   onChange={(e) => set({ location: { ...form.location, zoneEn: e.target.value } })} className="input" />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="ที่อยู่แสดงผล (ไทย)">
             <input value={form.location.address.th}
-                   onChange={(e) => set({ location: { ...form.location, address: { th: e.target.value } } })} className="input" />
+                   onChange={(e) => set({ location: { ...form.location, address: { ...form.location.address, th: e.target.value } } })} className="input" />
+          </Field>
+          <Field label="ที่อยู่แสดงผล (English)">
+            <input value={form.location.address.en}
+                   onChange={(e) => set({ location: { ...form.location, address: { ...form.location.address, en: e.target.value } } })} className="input" />
           </Field>
         </div>
 

@@ -14,15 +14,23 @@ const SECTION_LABELS: Record<string, string> = {
   latestProperties: 'ทรัพย์ประกาศใหม่ (อัตโนมัติ)',
 };
 
+const bi = (th = '') => ({ th, en: '' });
+
 const NEW_SECTION_DEFAULTS: Record<string, Record<string, any>> = {
-  hero: { eyebrow: 'D1LANDANDHOUSE', title: '', titleEm: '', subtitle: '', primaryCtaLabel: '', primaryCtaHref: '/properties', secondaryCtaLabel: '', secondaryCtaHref: '/contact', imageUrl: '' },
-  richText: { eyebrow: '', heading: '', body: '', imageUrl: '', imagePosition: 'right' },
-  ctaBanner: { heading: '', body: '', buttonLabel: '', buttonHref: '/properties' },
-  leadForm: { eyebrow: '', heading: '', body: '' },
-  featuredProperties: { eyebrow: 'Featured', heading: 'ทรัพย์แนะนำ', limit: 4 },
-  featuredProjects: { eyebrow: 'Projects', heading: 'โครงการแนะนำ', limit: 3 },
-  latestProperties: { eyebrow: 'New', heading: 'ทรัพย์ประกาศใหม่', limit: 8 },
+  hero: { eyebrow: bi('D1LANDANDHOUSE'), title: bi(), titleEm: bi(), subtitle: bi(), primaryCtaLabel: bi(), primaryCtaHref: '/properties', secondaryCtaLabel: bi(), secondaryCtaHref: '/contact', imageUrl: '' },
+  richText: { eyebrow: bi(), heading: bi(), body: bi(), imageUrl: '', imagePosition: 'right' },
+  ctaBanner: { heading: bi(), body: bi(), buttonLabel: bi(), buttonHref: '/properties' },
+  leadForm: { eyebrow: bi(), heading: bi(), body: bi() },
+  featuredProperties: { eyebrow: bi('Featured'), heading: bi('ทรัพย์แนะนำ'), limit: 4 },
+  featuredProjects: { eyebrow: bi('Projects'), heading: bi('โครงการแนะนำ'), limit: 3 },
+  latestProperties: { eyebrow: bi('New'), heading: bi('ทรัพย์ประกาศใหม่'), limit: 8 },
 };
+
+/** ค่าฟิลด์แปลได้ อาจเป็น string เดี่ยวแบบเก่า (ก่อนอัปเดต) หรือ {th,en} แบบใหม่ */
+function asBilingual(v: any): { th: string; en: string } {
+  if (v && typeof v === 'object') return { th: v.th ?? '', en: v.en ?? '' };
+  return { th: v ?? '', en: '' };
+}
 
 export function PageEditorPage() {
   const [sections, setSections] = useState<Section[] | null>(null);
@@ -140,25 +148,45 @@ function SectionFields({ type, data, onChange }: { type: string; data: Record<st
     value: data[key] ?? '',
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange({ [key]: e.target.value }),
   });
+  /** ฟิลด์แปลได้ — แสดงคู่ TH/EN สองช่อง เก็บเป็น {th,en} */
+  const bf = (key: string) => {
+    const cur = asBilingual(data[key]);
+    return {
+      th: { value: cur.th, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange({ [key]: { ...cur, th: e.target.value } }) },
+      en: { value: cur.en, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange({ [key]: { ...cur, en: e.target.value } }) },
+    };
+  };
 
   switch (type) {
     case 'hero':
       return (
         <div className="space-y-3">
-          <Field label="Eyebrow (ข้อความเล็กด้านบน)"><input className="input" {...f('eyebrow')} /></Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="หัวข้อหลัก"><input className="input" {...f('title')} /></Field>
-            <Field label="หัวข้อเน้นสีแดง (บรรทัดที่ 2)"><input className="input" {...f('titleEm')} /></Field>
-          </div>
-          <Field label="คำอธิบายสั้น"><textarea rows={2} className="input" {...f('subtitle')} /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="ปุ่มหลัก — ข้อความ"><input className="input" {...f('primaryCtaLabel')} /></Field>
-            <Field label="ปุ่มหลัก — ลิงก์"><input className="input" {...f('primaryCtaHref')} /></Field>
+            <Field label="Eyebrow (ไทย)"><input className="input" {...bf('eyebrow').th} /></Field>
+            <Field label="Eyebrow (English)"><input className="input" {...bf('eyebrow').en} /></Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="ปุ่มรอง — ข้อความ"><input className="input" {...f('secondaryCtaLabel')} /></Field>
-            <Field label="ปุ่มรอง — ลิงก์"><input className="input" {...f('secondaryCtaHref')} /></Field>
+            <Field label="หัวข้อหลัก (ไทย)"><input className="input" {...bf('title').th} /></Field>
+            <Field label="หัวข้อหลัก (English)"><input className="input" {...bf('title').en} /></Field>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="หัวข้อเน้นสีแดง บรรทัด 2 (ไทย)"><input className="input" {...bf('titleEm').th} /></Field>
+            <Field label="หัวข้อเน้นสีแดง บรรทัด 2 (English)"><input className="input" {...bf('titleEm').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="คำอธิบายสั้น (ไทย)"><textarea rows={2} className="input" {...bf('subtitle').th} /></Field>
+            <Field label="คำอธิบายสั้น (English)"><textarea rows={2} className="input" {...bf('subtitle').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="ปุ่มหลัก — ข้อความ (ไทย)"><input className="input" {...bf('primaryCtaLabel').th} /></Field>
+            <Field label="ปุ่มหลัก — ข้อความ (English)"><input className="input" {...bf('primaryCtaLabel').en} /></Field>
+          </div>
+          <Field label="ปุ่มหลัก — ลิงก์"><input className="input" {...f('primaryCtaHref')} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="ปุ่มรอง — ข้อความ (ไทย)"><input className="input" {...bf('secondaryCtaLabel').th} /></Field>
+            <Field label="ปุ่มรอง — ข้อความ (English)"><input className="input" {...bf('secondaryCtaLabel').en} /></Field>
+          </div>
+          <Field label="ปุ่มรอง — ลิงก์"><input className="input" {...f('secondaryCtaHref')} /></Field>
           <Field label="ภาพพื้นหลัง">
             <MediaUploader value={data.imageUrl} onChange={(_id, url) => onChange({ imageUrl: url })} />
           </Field>
@@ -168,9 +196,18 @@ function SectionFields({ type, data, onChange }: { type: string; data: Record<st
     case 'richText':
       return (
         <div className="space-y-3">
-          <Field label="Eyebrow"><input className="input" {...f('eyebrow')} /></Field>
-          <Field label="หัวข้อ"><input className="input" {...f('heading')} /></Field>
-          <Field label="เนื้อหา"><textarea rows={4} className="input" {...f('body')} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow (ไทย)"><input className="input" {...bf('eyebrow').th} /></Field>
+            <Field label="Eyebrow (English)"><input className="input" {...bf('eyebrow').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="หัวข้อ (ไทย)"><input className="input" {...bf('heading').th} /></Field>
+            <Field label="หัวข้อ (English)"><input className="input" {...bf('heading').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="เนื้อหา (ไทย)"><textarea rows={4} className="input" {...bf('body').th} /></Field>
+            <Field label="เนื้อหา (English)"><textarea rows={4} className="input" {...bf('body').en} /></Field>
+          </div>
           <Field label="ตำแหน่งรูปภาพ">
             <select className="input" {...f('imagePosition')}>
               <option value="right">ขวา</option>
@@ -189,21 +226,37 @@ function SectionFields({ type, data, onChange }: { type: string; data: Record<st
     case 'ctaBanner':
       return (
         <div className="space-y-3">
-          <Field label="หัวข้อ"><input className="input" {...f('heading')} /></Field>
-          <Field label="เนื้อหา"><textarea rows={2} className="input" {...f('body')} /></Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="ปุ่ม — ข้อความ"><input className="input" {...f('buttonLabel')} /></Field>
-            <Field label="ปุ่ม — ลิงก์"><input className="input" {...f('buttonHref')} /></Field>
+            <Field label="หัวข้อ (ไทย)"><input className="input" {...bf('heading').th} /></Field>
+            <Field label="หัวข้อ (English)"><input className="input" {...bf('heading').en} /></Field>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="เนื้อหา (ไทย)"><textarea rows={2} className="input" {...bf('body').th} /></Field>
+            <Field label="เนื้อหา (English)"><textarea rows={2} className="input" {...bf('body').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="ปุ่ม — ข้อความ (ไทย)"><input className="input" {...bf('buttonLabel').th} /></Field>
+            <Field label="ปุ่ม — ข้อความ (English)"><input className="input" {...bf('buttonLabel').en} /></Field>
+          </div>
+          <Field label="ปุ่ม — ลิงก์"><input className="input" {...f('buttonHref')} /></Field>
         </div>
       );
 
     case 'leadForm':
       return (
         <div className="space-y-3">
-          <Field label="Eyebrow"><input className="input" {...f('eyebrow')} /></Field>
-          <Field label="หัวข้อ"><input className="input" {...f('heading')} /></Field>
-          <Field label="เนื้อหา"><textarea rows={2} className="input" {...f('body')} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow (ไทย)"><input className="input" {...bf('eyebrow').th} /></Field>
+            <Field label="Eyebrow (English)"><input className="input" {...bf('eyebrow').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="หัวข้อ (ไทย)"><input className="input" {...bf('heading').th} /></Field>
+            <Field label="หัวข้อ (English)"><input className="input" {...bf('heading').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="เนื้อหา (ไทย)"><textarea rows={2} className="input" {...bf('body').th} /></Field>
+            <Field label="เนื้อหา (English)"><textarea rows={2} className="input" {...bf('body').en} /></Field>
+          </div>
           <p className="text-xs text-muted">ฟอร์มติดต่อจริงจะแสดงคู่กันอัตโนมัติ ไม่ต้องตั้งค่าเพิ่ม</p>
         </div>
       );
@@ -213,8 +266,14 @@ function SectionFields({ type, data, onChange }: { type: string; data: Record<st
     case 'latestProperties':
       return (
         <div className="space-y-3">
-          <Field label="Eyebrow"><input className="input" {...f('eyebrow')} /></Field>
-          <Field label="หัวข้อ"><input className="input" {...f('heading')} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow (ไทย)"><input className="input" {...bf('eyebrow').th} /></Field>
+            <Field label="Eyebrow (English)"><input className="input" {...bf('eyebrow').en} /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="หัวข้อ (ไทย)"><input className="input" {...bf('heading').th} /></Field>
+            <Field label="หัวข้อ (English)"><input className="input" {...bf('heading').en} /></Field>
+          </div>
           <Field label="จำนวนที่แสดง">
             <input type="number" className="input" value={data.limit ?? ''}
                    onChange={(e) => onChange({ limit: Number(e.target.value) })} />
@@ -242,6 +301,11 @@ function LivePreview({ sections }: { sections: Section[] }) {
   );
 }
 
+/** preview แสดงเวอร์ชันไทยเสมอ (ไม่ว่าจะกรอก EN ไว้หรือไม่ก็ตาม) เพื่อความเรียบง่าย */
+function bt(v: any): string {
+  return v && typeof v === 'object' ? (v.th ?? '') : (v ?? '');
+}
+
 function PreviewSection({ section }: { section: Section }) {
   const d = section.data ?? {};
   switch (section.type) {
@@ -251,13 +315,13 @@ function PreviewSection({ section }: { section: Section }) {
           backgroundImage: d.imageUrl ? `linear-gradient(rgba(11,11,12,.5),rgba(11,11,12,.5)), url(${d.imageUrl})` : undefined,
           backgroundSize: 'cover', backgroundPosition: 'center',
         }}>
-          {d.eyebrow && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-2">{d.eyebrow}</p>}
-          <p className="font-display text-lg leading-tight mb-1">{d.title || 'หัวข้อหลัก'}</p>
-          {d.titleEm && <p className="font-display text-lg leading-tight text-red-bright mb-2">{d.titleEm}</p>}
-          {d.subtitle && <p className="text-white/70 text-[10px] mb-3 line-clamp-2">{d.subtitle}</p>}
+          {bt(d.eyebrow) && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-2">{bt(d.eyebrow)}</p>}
+          <p className="font-display text-lg leading-tight mb-1">{bt(d.title) || 'หัวข้อหลัก'}</p>
+          {bt(d.titleEm) && <p className="font-display text-lg leading-tight text-red-bright mb-2">{bt(d.titleEm)}</p>}
+          {bt(d.subtitle) && <p className="text-white/70 text-[10px] mb-3 line-clamp-2">{bt(d.subtitle)}</p>}
           <div className="flex gap-2">
-            {d.primaryCtaLabel && <span className="bg-red text-white px-3 py-1.5 text-[9px] uppercase">{d.primaryCtaLabel}</span>}
-            {d.secondaryCtaLabel && <span className="border border-red text-red-bright px-3 py-1.5 text-[9px] uppercase">{d.secondaryCtaLabel}</span>}
+            {bt(d.primaryCtaLabel) && <span className="bg-red text-white px-3 py-1.5 text-[9px] uppercase">{bt(d.primaryCtaLabel)}</span>}
+            {bt(d.secondaryCtaLabel) && <span className="border border-red text-red-bright px-3 py-1.5 text-[9px] uppercase">{bt(d.secondaryCtaLabel)}</span>}
           </div>
         </div>
       );
@@ -266,9 +330,9 @@ function PreviewSection({ section }: { section: Section }) {
         <div className="p-5 border-t border-white/10">
           <div className={`flex gap-4 ${d.imagePosition === 'left' ? 'flex-row-reverse' : ''}`}>
             <div className="flex-1">
-              {d.eyebrow && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{d.eyebrow}</p>}
-              <p className="font-display text-sm mb-1">{d.heading || 'หัวข้อเนื้อหา'}</p>
-              <p className="text-white/60 text-[10px] line-clamp-3">{d.body}</p>
+              {bt(d.eyebrow) && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{bt(d.eyebrow)}</p>}
+              <p className="font-display text-sm mb-1">{bt(d.heading) || 'หัวข้อเนื้อหา'}</p>
+              <p className="text-white/60 text-[10px] line-clamp-3">{bt(d.body)}</p>
             </div>
             {d.imagePosition !== 'none' && d.imageUrl && (
               <img src={d.imageUrl} alt="" className="w-16 h-16 object-cover shrink-0" />
@@ -279,17 +343,17 @@ function PreviewSection({ section }: { section: Section }) {
     case 'ctaBanner':
       return (
         <div className="p-5 bg-white text-ink text-center border-t border-white/10">
-          <p className="font-display text-sm mb-1">{d.heading || 'หัวข้อ CTA'}</p>
-          {d.body && <p className="text-black/60 text-[10px] mb-2 line-clamp-2">{d.body}</p>}
-          {d.buttonLabel && <span className="inline-block bg-red text-white px-3 py-1.5 text-[9px] uppercase">{d.buttonLabel}</span>}
+          <p className="font-display text-sm mb-1">{bt(d.heading) || 'หัวข้อ CTA'}</p>
+          {bt(d.body) && <p className="text-black/60 text-[10px] mb-2 line-clamp-2">{bt(d.body)}</p>}
+          {bt(d.buttonLabel) && <span className="inline-block bg-red text-white px-3 py-1.5 text-[9px] uppercase">{bt(d.buttonLabel)}</span>}
         </div>
       );
     case 'leadForm':
       return (
         <div className="p-5 bg-white text-ink border-t border-white/10">
-          {d.eyebrow && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{d.eyebrow}</p>}
-          <p className="font-display text-sm mb-1">{d.heading || 'ฟอร์มติดต่อ'}</p>
-          <p className="text-black/50 text-[10px] mb-2 line-clamp-2">{d.body}</p>
+          {bt(d.eyebrow) && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{bt(d.eyebrow)}</p>}
+          <p className="font-display text-sm mb-1">{bt(d.heading) || 'ฟอร์มติดต่อ'}</p>
+          <p className="text-black/50 text-[10px] mb-2 line-clamp-2">{bt(d.body)}</p>
           <div className="bg-ink text-white/40 text-[9px] p-2 text-center">[ ฟอร์มติดต่อจริง ]</div>
         </div>
       );
@@ -297,8 +361,8 @@ function PreviewSection({ section }: { section: Section }) {
     case 'latestProperties':
       return (
         <div className="p-5 border-t border-white/10">
-          {d.eyebrow && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{d.eyebrow}</p>}
-          <p className="font-display text-sm mb-2">{d.heading || 'ทรัพย์'}</p>
+          {bt(d.eyebrow) && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{bt(d.eyebrow)}</p>}
+          <p className="font-display text-sm mb-2">{bt(d.heading) || 'ทรัพย์'}</p>
           <div className="grid grid-cols-4 gap-1.5">
             {Array.from({ length: Math.min(4, d.limit ?? 4) }).map((_, i) => (
               <div key={i} className="aspect-square bg-white/10" />
@@ -310,8 +374,8 @@ function PreviewSection({ section }: { section: Section }) {
     case 'featuredProjects':
       return (
         <div className="p-5 border-t border-white/10">
-          {d.eyebrow && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{d.eyebrow}</p>}
-          <p className="font-display text-sm mb-2">{d.heading || 'โครงการ'}</p>
+          {bt(d.eyebrow) && <p className="text-red text-[9px] uppercase tracking-[.14em] mb-1">{bt(d.eyebrow)}</p>}
+          <p className="font-display text-sm mb-2">{bt(d.heading) || 'โครงการ'}</p>
           <div className="grid grid-cols-3 gap-1.5">
             {Array.from({ length: Math.min(3, d.limit ?? 3) }).map((_, i) => (
               <div key={i} className="aspect-[3/2] bg-white/10" />
